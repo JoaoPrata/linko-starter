@@ -3,6 +3,8 @@ package main
 import (
 	"context"
 	"flag"
+	"fmt"
+	"io"
 	"log"
 	"os"
 	"os/signal"
@@ -25,21 +27,19 @@ func main() {
 }
 
 func run(ctx context.Context, cancel context.CancelFunc, httpPort int, dataDir string) int {
-	stdLogger := log.New(os.Stderr, "DEBUG: ", log.LstdFlags)
-	accessLog, err := os.OpenFile("linko.access.log", os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0644)
+	logger, err := initializeLogger(os.Getenv("LINKO_LOG_FILE"))
 	if err != nil {
-		stdLogger.Printf("failed to open access log file: %v", err)
-		return 1
-	}
-	accessLogger := log.New(accessLog, "INFO: ", log.LstdFlags)
-
-	st, err := store.New(dataDir, stdLogger)
-	if err != nil {
-		stdLogger.Printf("failed to create store: %v", err)
+		fmt.Fprintf(os.Stderr, "failed to initialize logger: %v\n", err)
 		return 1
 	}
 
-	s := newServer(*st, httpPort, cancel, accessLogger)
+	st, err := store.New(dataDir, logger)
+	if err != nil {
+		logger.Printf("failed to create store: %v", err)
+		return 1
+	}
+
+	s := newServer(*st, httpPort, cancel, logger)
 	var serverErr error
 	go func() {
 		serverErr = s.start()
@@ -49,14 +49,26 @@ func run(ctx context.Context, cancel context.CancelFunc, httpPort int, dataDir s
 	shutdownCtx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 	defer cancel()
 
-	stdLogger.Println("Linko is shutting down")
+	logger.Println("Linko is shutting down")
 	if err := s.shutdown(shutdownCtx); err != nil {
-		stdLogger.Printf("failed to shutdown server: %v", err)
+		logger.Printf("failed to shutdown server: %v", err)
 		return 1
 	}
 	if serverErr != nil {
-		stdLogger.Printf("server error: %v", serverErr)
+		logger.Printf("server error: %v", serverErr)
 		return 1
 	}
 	return 0
+}
+
+func initializeLogger(logFile string) (*log.Logger, error) {
+	if logFile != "" {
+		file, err := os.OpenFile(logFile, os.O_WRONLY|os.O_CREATE|os.O_APPEND, 0o644)
+		if err != nil {
+			return nil, fmt.Errorf("failed to open log file: %w", err)
+		}
+		multiWriter := io.MultiWriter(os.Stderr, file)
+		return log.New(multiWriter, "", log.LstdFlags), nil
+	}
+	return log.New(os.Stderr, "", log.LstdFlags), nil
 }
