@@ -85,7 +85,7 @@ func initializeLogger(logFile string) (*slog.Logger, closeFunc, error) {
 			Level: slog.LevelDebug,
 		})
 
-		infoHandler := slog.NewTextHandler(multiWriter, &slog.HandlerOptions{
+		infoHandler := slog.NewJSONHandler(multiWriter, &slog.HandlerOptions{
 			Level: slog.LevelInfo,
 		})
 
