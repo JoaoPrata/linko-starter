@@ -13,6 +13,7 @@ import (
 	"syscall"
 	"time"
 
+	"boot.dev/linko/internal/build"
 	"boot.dev/linko/internal/linkoerr"
 	"boot.dev/linko/internal/store"
 	pkgerr "github.com/pkg/errors"
@@ -84,7 +85,10 @@ func run(ctx context.Context, cancel context.CancelFunc, httpPort int, dataDir s
 }
 
 func initializeLogger(logFile string) (*slog.Logger, closeFunc, error) {
-
+	var handler slog.Handler
+	closeFunc := func() error {
+		return nil
+	}
 	if logFile != "" {
 		file, err := os.OpenFile(logFile, os.O_WRONLY|os.O_CREATE|os.O_APPEND, 0o644)
 		if err != nil {
@@ -104,7 +108,7 @@ func initializeLogger(logFile string) (*slog.Logger, closeFunc, error) {
 			ReplaceAttr: replaceAttr,
 		})
 
-		close := func() error {
+		closeFunc = func() error {
 			if err := bufferedFile.Flush(); err != nil {
 				return fmt.Errorf("failed to flush log buffer: %w", err)
 			}
@@ -114,12 +118,14 @@ func initializeLogger(logFile string) (*slog.Logger, closeFunc, error) {
 			return nil
 		}
 
-		return slog.New(slog.NewMultiHandler(debugHandler, infoHandler)), close, nil
+		handler = slog.NewMultiHandler(debugHandler, infoHandler)
 	}
-	close := func() error {
-		return nil
-	}
-	return slog.New(slog.NewTextHandler(os.Stderr, nil)), close, nil
+	logger := slog.New(handler)
+	logger = logger.With(
+		slog.String("git_sha", build.GitSHA),
+		slog.String("build_time", build.BuildTime),
+	)
+	return logger, closeFunc, nil
 }
 
 func replaceAttr(groups []string, a slog.Attr) slog.Attr {
