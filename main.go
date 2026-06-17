@@ -121,9 +121,13 @@ func initializeLogger(logFile string) (*slog.Logger, closeFunc, error) {
 		handler = slog.NewMultiHandler(debugHandler, infoHandler)
 	}
 	logger := slog.New(handler)
+
+	hostname, _ := os.Hostname()
 	logger = logger.With(
 		slog.String("git_sha", build.GitSHA),
 		slog.String("build_time", build.BuildTime),
+		slog.String("env", os.Getenv("ENV")),
+		slog.String("hostname", hostname),
 	)
 	return logger, closeFunc, nil
 }
