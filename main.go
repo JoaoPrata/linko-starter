@@ -16,6 +16,8 @@ import (
 	"boot.dev/linko/internal/build"
 	"boot.dev/linko/internal/linkoerr"
 	"boot.dev/linko/internal/store"
+	"github.com/lmittmann/tint"
+	"github.com/mattn/go-isatty"
 	pkgerr "github.com/pkg/errors"
 )
 
@@ -85,10 +87,17 @@ func run(ctx context.Context, cancel context.CancelFunc, httpPort int, dataDir s
 }
 
 func initializeLogger(logFile string) (*slog.Logger, closeFunc, error) {
-	var handler slog.Handler
+	handlers := []slog.Handler{
+		tint.NewHandler(os.Stderr, &tint.Options{
+			Level:       slog.LevelDebug,
+			ReplaceAttr: replaceAttr,
+			NoColor:     !(isatty.IsTerminal(os.Stderr.Fd()) || isatty.IsCygwinTerminal(os.Stderr.Fd())),
+		}),
+	}
 	closeFunc := func() error {
 		return nil
 	}
+
 	if logFile != "" {
 		file, err := os.OpenFile(logFile, os.O_WRONLY|os.O_CREATE|os.O_APPEND, 0o644)
 		if err != nil {
@@ -97,11 +106,6 @@ func initializeLogger(logFile string) (*slog.Logger, closeFunc, error) {
 
 		bufferedFile := bufio.NewWriterSize(file, 8192)
 		multiWriter := io.MultiWriter(os.Stderr, bufferedFile)
-
-		debugHandler := slog.NewTextHandler(os.Stderr, &slog.HandlerOptions{
-			Level:       slog.LevelDebug,
-			ReplaceAttr: replaceAttr,
-		})
 
 		infoHandler := slog.NewJSONHandler(multiWriter, &slog.HandlerOptions{
 			Level:       slog.LevelInfo,
@@ -117,10 +121,10 @@ func initializeLogger(logFile string) (*slog.Logger, closeFunc, error) {
 			}
 			return nil
 		}
-
-		handler = slog.NewMultiHandler(debugHandler, infoHandler)
+		handlers = append(handlers, infoHandler)
 	}
-	logger := slog.New(handler)
+
+	logger := slog.New(slog.NewMultiHandler(handlers...))
 
 	hostname, _ := os.Hostname()
 	logger = logger.With(
