@@ -1,0 +1,40 @@
+File: linko
+Build ID: 29ea00439ac7a1a180b2ad4aba0ee5273e1d5501
+Type: inuse_space
+Time: 2026-07-02 08:49:43 WEST
+Duration: 30s, Total samples = 2982.69kB 
+Showing nodes accounting for 1177.52kB, 39.48% of 2982.69kB total
+      flat  flat%   sum%        cum   cum%
+ 1568.10kB 52.57% 52.57%  1568.10kB 52.57%  internal/bytealg.MakeNoZero
+ -902.59kB 30.26% 22.31%  -902.59kB 30.26%  compress/flate.NewWriter (inline)
+  512.01kB 17.17% 39.48%   512.01kB 17.17%  net/http.(*chunkWriter).Write
+         0     0% 39.48%   512.01kB 17.17%  bufio.(*Writer).Write
+         0     0% 39.48%  -902.59kB 30.26%  compress/gzip.(*Writer).Write
+         0     0% 39.48%   512.01kB 17.17%  io.WriteString
+         0     0% 39.48%   512.01kB 17.17%  main.(*server).handlerIndex
+         0     0% 39.48%  1568.10kB 52.57%  main.(*server).handlerRedirect
+         0     0% 39.48%   512.01kB 17.17%  main.(*spyResponseWriter).Write
+         0     0% 39.48%  -902.59kB 30.26%  main.newServer.(*server).authMiddleware.func10
+         0     0% 39.48%  1177.52kB 39.48%  main.newServer.metricsMiddleware.func5
+         0     0% 39.48%  1177.52kB 39.48%  main.newServer.newServer.requestID.func1.func4
+         0     0% 39.48%  1177.52kB 39.48%  main.newServer.newServer.requestLogger.func2.func3
+         0     0% 39.48%  1177.52kB 39.48%  net/http.(*ServeMux).ServeHTTP
+         0     0% 39.48%  1177.52kB 39.48%  net/http.(*conn).serve
+         0     0% 39.48%   512.01kB 17.17%  net/http.(*response).Write
+         0     0% 39.48%   512.01kB 17.17%  net/http.(*response).write
+         0     0% 39.48%  1177.52kB 39.48%  net/http.HandlerFunc.ServeHTTP
+         0     0% 39.48%  1177.52kB 39.48%  net/http.serverHandler.ServeHTTP
+         0     0% 39.48%  -902.59kB 30.26%  net/http/pprof.Index
+         0     0% 39.48%  -902.59kB 30.26%  net/http/pprof.collectProfile
+         0     0% 39.48%  -902.59kB 30.26%  net/http/pprof.handler.ServeHTTP
+         0     0% 39.48%  -902.59kB 30.26%  net/http/pprof.handler.serveDeltaProfile
+         0     0% 39.48%  -902.59kB 30.26%  runtime/pprof.(*Profile).WriteTo
+         0     0% 39.48%  -902.59kB 30.26%  runtime/pprof.(*profileBuilder).appendLocsForStack
+         0     0% 39.48%  -902.59kB 30.26%  runtime/pprof.(*profileBuilder).emitLocation
+         0     0% 39.48%  -902.59kB 30.26%  runtime/pprof.(*profileBuilder).flush
+         0     0% 39.48%  -902.59kB 30.26%  runtime/pprof.writeHeap
+         0     0% 39.48%  -902.59kB 30.26%  runtime/pprof.writeHeapInternal
+         0     0% 39.48%  -902.59kB 30.26%  runtime/pprof.writeHeapProto
+         0     0% 39.48%  1568.10kB 52.57%  strings.(*Builder).Grow
+         0     0% 39.48%  1568.10kB 52.57%  strings.(*Builder).grow
+         0     0% 39.48%  1568.10kB 52.57%  strings.Repeat
